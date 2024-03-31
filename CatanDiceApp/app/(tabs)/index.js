@@ -10,12 +10,12 @@ import {
 import React, { useEffect, useState } from "react";
 import * as Device from "expo-device";
 import { COLOURS, SIZES } from "../../constants/theme";
-import { VictoryBar, VictoryChart, VictoryTheme, VictoryAxis } from "victory-native";
+import { VictoryBar, VictoryChart, VictoryAxis } from "victory-native";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
-  getDoc,
   limit,
   onSnapshot,
   orderBy,
@@ -25,13 +25,24 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase-config";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import DeleteGameModal from "../../components/modals/DeleteGameModal";
+import ClearGameModal from "../../components/modals/ClearGameModal";
+import EndGameModal from "../../components/modals/EndGameModal";
+import ChooseWinnerModal from "../../components/modals/ChooseWinnerModal";
+import NewGameModal from "../../components/modals/NewGameModal";
 
 const Tab = () => {
   const [lastRoll, setLastRoll] = useState("");
   const [diceHistoryLine, setDiceHistoryLine] = useState("");
   const [totalRolls, setTotalRolls] = useState(0);
+  const [players, setPlayers] = useState([""]);
   const [isNewGame, setIsNewGame] = useState(true);
   const [gameID, setGameID] = useState("");
+  const [showClearGameModal, setShowClearGameModal] = useState(false);
+  const [showEndGameModal, setShowEndGameModal] = useState(false);
+  const [showDeleteGameModal, setShowDeleteGameModal] = useState(false);
+  const [showChooseWinnerModal, setShowChooseWinnerModal] = useState(false);
+  const [showNewGameModal, setShowNewGameModal] = useState(false);
   const [graphData, setGraphData] = useState([
     { number: 1, value: 0 },
     { number: 2, value: 0 },
@@ -69,6 +80,7 @@ const Tab = () => {
             setTotalRolls(game.data().total_rolls);
             setDiceHistoryLine(game.data().dice_history_line);
             setGameID(game.id);
+            setPlayers(game.data().players);
           } else {
             setIsNewGame(true);
           }
@@ -96,7 +108,7 @@ const Tab = () => {
 
       // Get new dice history line
       let updated_dice_history_line = diceHistoryLine;
-      if (diceHistoryLine == "No Rolls Recorded") {
+      if (diceHistoryLine == "No Rolls Recorded" || diceHistoryLine == "") {
         updated_dice_history_line = option;
       } else {
         updated_dice_history_line = option + ", " + updated_dice_history_line;
@@ -119,6 +131,10 @@ const Tab = () => {
           number == 0
             ? (updated_dice_history_line = historySplit[number])
             : (updated_dice_history_line = updated_dice_history_line + ", " + historySplit[number]);
+        }
+
+        if (updated_dice_history_line == "") {
+          updated_dice_history_line = "No Rolls Recorded";
         }
 
         // Find removed number from dice history and decrement the map
@@ -147,45 +163,126 @@ const Tab = () => {
   const newGame = async () => {
     console.log("newGame pressed");
 
-    setLastRoll("");
+    setShowNewGameModal(true);
+  };
 
-    // should add popup asking if they are sure
+  const onNewGameModalClose = async (newGameStarted, players, expansion) => {
+    if (newGameStarted) {
+      setLastRoll("");
 
-    // need to get players names with popup too
-    const players = ["Nick", "Other"];
-
-    // need to get expansion too from popup
-    const expansion = "";
-
-    // Add a new document with a generated id.
-    await addDoc(collection(db, "History"), {
-      players: players,
-      date: serverTimestamp(),
-      dice_history: {
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-        6: 0,
-        7: 0,
-        8: 0,
-        9: 0,
-        10: 0,
-        11: 0,
-        12: 0,
-      },
-      dice_history_line: "No Rolls Recorded",
-      expansion: expansion,
-      total_rolls: 0,
-      winner: "",
-    })
-      .then((doc) => {
-        console.log("Document written with ID: ", doc.id);
+      // Add a new document with a generated id.
+      await addDoc(collection(db, "History"), {
+        players: players,
+        expansion: expansion,
+        dice_history_line: "No Rolls Recorded",
+        total_rolls: 0,
+        winner: "",
+        date: serverTimestamp(),
+        dice_history: {
+          1: 0,
+          2: 0,
+          3: 0,
+          4: 0,
+          5: 0,
+          6: 0,
+          7: 0,
+          8: 0,
+          9: 0,
+          10: 0,
+          11: 0,
+          12: 0,
+        },
       })
-      .catch((error) => {
-        console.log(error.message);
+        .then((doc) => {
+          console.log("Document written with ID: ", doc.id);
+        })
+        .catch((error) => {
+          console.log(error.message);
+        })
+        .finally(() => {
+          setShowNewGameModal(false);
+        });
+    } else {
+      setShowNewGameModal(false);
+    }
+  };
+
+  const endGame = () => {
+    console.log("end game pressed");
+
+    setShowEndGameModal(true);
+  };
+
+  const onEndGameModalClose = async (endGame) => {
+    if (endGame) {
+      setShowChooseWinnerModal(true);
+      setShowEndGameModal(false);
+    } else {
+      setShowEndGameModal(false);
+    }
+  };
+
+  const onWinnerModalClose = async (winnerChosen, winner) => {
+    if (winnerChosen) {
+      // Update the database and choose a winner, by choosing a winner, the board will clear
+      await updateDoc(doc(db, "History", gameID), {
+        winner: winner,
       });
+
+      setShowChooseWinnerModal(false);
+    } else {
+      setShowChooseWinnerModal(false);
+    }
+  };
+
+  const clearGame = () => {
+    setShowClearGameModal(true);
+  };
+
+  const onClearGameModalClose = async (clearGame) => {
+    if (clearGame) {
+      // Create blank dice_history map
+      let tmpHistory = [
+        { number: 1, value: 0 },
+        { number: 2, value: 0 },
+        { number: 3, value: 0 },
+        { number: 4, value: 0 },
+        { number: 5, value: 0 },
+        { number: 6, value: 0 },
+        { number: 7, value: 0 },
+        { number: 8, value: 0 },
+        { number: 9, value: 0 },
+        { number: 10, value: 0 },
+        { number: 11, value: 0 },
+        { number: 12, value: 0 },
+      ];
+
+      // Convert data to map for firebase
+      const updated_dice_history = tmpHistory.reduce(function (map, obj) {
+        map[obj.number] = obj.value;
+        return map;
+      }, {});
+
+      await updateDoc(doc(db, "History", gameID), {
+        total_rolls: 0,
+        dice_history: updated_dice_history,
+        dice_history_line: "No Rolls Recorded",
+      });
+    }
+
+    setShowClearGameModal(false);
+  };
+
+  const deleteGame = () => {
+    setShowDeleteGameModal(true);
+  };
+
+  const onDeleteGameModalClose = async (deleteGame) => {
+    if (deleteGame) {
+      await deleteDoc(doc(db, "History", gameID));
+    }
+
+    setShowDeleteGameModal(false);
   };
 
   return (
@@ -251,9 +348,13 @@ const Tab = () => {
               </Text>
             </View>
 
-            {lastRoll != "" && (
+            {totalRolls > 0 ? (
               <View style={styles.currentRollContainer}>
                 <Text style={styles.currentRollText}>{lastRoll}</Text>
+              </View>
+            ) : (
+              <View style={styles.currentRollContainer}>
+                <Text style={styles.currentRollText}>--</Text>
               </View>
             )}
 
@@ -419,14 +520,44 @@ const Tab = () => {
           </View>
         )}
       </View>
-
-      <View style={{ alignSelf: "center" }}>
-        <TouchableOpacity style={styles.newGameBtnContainer} onPress={newGame}>
-          <View>
-            <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>New Game</Text>
+      <View style={styles.btnViewContainer}>
+        {isNewGame ? (
+          <TouchableOpacity style={styles.newGameBtnContainer} onPress={newGame}>
+            <View>
+              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>New Game</Text>
+            </View>
+          </TouchableOpacity>
+        ) : totalRolls > 0 ? (
+          <View style={styles.btnViewContainer}>
+            <TouchableOpacity style={styles.newGameBtnContainer} onPress={clearGame}>
+              <View>
+                <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Clear</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.endGameBtnContainer} onPress={endGame}>
+              <View>
+                <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Finish</Text>
+              </View>
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.newGameBtnContainer} onPress={deleteGame}>
+            <View>
+              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Delete Game</Text>
+            </View>
+          </TouchableOpacity>
+        )}
       </View>
+
+      <DeleteGameModal isVisible={showDeleteGameModal} onClose={onDeleteGameModalClose} />
+      <ClearGameModal isVisible={showClearGameModal} onClose={onClearGameModalClose} />
+      <EndGameModal isVisible={showEndGameModal} onClose={onEndGameModalClose} />
+      <ChooseWinnerModal
+        isVisible={showChooseWinnerModal}
+        onClose={onWinnerModalClose}
+        players={players}
+      />
+      <NewGameModal isVisible={showNewGameModal} onClose={onNewGameModalClose} />
     </SafeAreaView>
   );
 };
@@ -509,5 +640,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 3,
+  },
+  endGameBtnContainer: {
+    marginVertical: SIZES.large,
+    padding: SIZES.small,
+    paddingHorizontal: SIZES.xxxLarge + 5,
+    backgroundColor: COLOURS.green,
+    borderRadius: SIZES.xSmall - 4,
+    justifyContent: "space-between",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  btnViewContainer: {
+    alignSelf: "center",
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    width: "100%",
   },
 });

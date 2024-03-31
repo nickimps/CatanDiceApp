@@ -32,7 +32,7 @@ const COLOURS = {
 
   notif_red: "#A62C2B",
   danger_red: "#D22B2B",
-  green: "#33b249",
+  green: "#346751",
 
   placeholder_grey: "#777777",
 };
