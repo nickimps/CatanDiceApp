@@ -1,24 +1,37 @@
 import React from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs } from "expo-router";
+import { COLOURS } from "../../constants/theme";
 
 export default function TabLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: "blue" }}>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: COLOURS.teal,
+        tabBarInactiveTintColor: COLOURS.ice_blue,
+        tabBarStyle: {
+          backgroundColor: COLOURS.light_black,
+          borderTopWidth: 0,
+        },
+        headerStyle: { backgroundColor: COLOURS.light_black },
+        headerTitleStyle: { color: COLOURS.text_grey },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Track",
           tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
+          headerShown: false,
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="history"
         options={{
-          title: "Settings",
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
+          title: "History",
+          tabBarIcon: ({ color }) => <FontAwesome size={28} name="bar-chart" color={color} />,
           // This tab will no longer show up in the tab bar.
-          href: null,
+          //   href: null,
         }}
       />
     </Tabs>
