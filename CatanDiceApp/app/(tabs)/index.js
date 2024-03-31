@@ -251,7 +251,6 @@ const Tab = () => {
     if (clearGame) {
       // Create blank dice_history map
       let tmpHistory = [
-        { number: 1, value: 0 },
         { number: 2, value: 0 },
         { number: 3, value: 0 },
         { number: 4, value: 0 },
@@ -350,13 +349,9 @@ const Tab = () => {
                 <Text style={styles.boldText}>Total Rolls: </Text>
                 {totalRolls}
               </Text>
-              <Text style={[styles.text, { paddingTop: SIZES.xxxSmall }]} numberOfLines={1}>
+              <Text style={[styles.text, { paddingTop: SIZES.xxxSmall }]} numberOfLines={2}>
                 <Text style={styles.boldText}>Last Roll: </Text>
                 {diceHistoryLine}
-              </Text>
-              <Text style={styles.text}>
-                <Text style={styles.boldText}>Current Turn Time: </Text>
-                0:00
               </Text>
             </View>
 
@@ -546,7 +541,6 @@ const Tab = () => {
                 <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Clear</Text>
               </View>
             </TouchableOpacity>
-            <Text style={styles.boldText}>Game Time</Text>
             <TouchableOpacity style={styles.endGameBtnContainer} onPress={endGame}>
               <View>
                 <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Finish</Text>
@@ -585,6 +579,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZES.small,
   },
   text: {
+    fontSize: SIZES.medium - 1,
     color: COLOURS.text_grey,
   },
   boldText: {
@@ -673,5 +668,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-evenly",
     width: "100%",
+  },
+  timeContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: SIZES.xSmall,
   },
 });
