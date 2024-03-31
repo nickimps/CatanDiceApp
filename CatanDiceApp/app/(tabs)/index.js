@@ -31,6 +31,15 @@ import EndGameModal from "../../components/modals/EndGameModal";
 import ChooseWinnerModal from "../../components/modals/ChooseWinnerModal";
 import NewGameModal from "../../components/modals/NewGameModal";
 
+/*
+ *
+ *
+ * TODO: Add a timer/clock that gets reset every time a dice is rolled
+ * TODO: Add a game timer for the total game time
+ *
+ *
+ */
+
 const Tab = () => {
   const [lastRoll, setLastRoll] = useState("");
   const [diceHistoryLine, setDiceHistoryLine] = useState("");
@@ -44,7 +53,6 @@ const Tab = () => {
   const [showChooseWinnerModal, setShowChooseWinnerModal] = useState(false);
   const [showNewGameModal, setShowNewGameModal] = useState(false);
   const [graphData, setGraphData] = useState([
-    { number: 1, value: 0 },
     { number: 2, value: 0 },
     { number: 3, value: 0 },
     { number: 4, value: 0 },
@@ -98,7 +106,7 @@ const Tab = () => {
       setLastRoll(option);
 
       let tmpHistory = graphData;
-      tmpHistory[option - 1].value = tmpHistory[option - 1].value + 1;
+      tmpHistory[option - 2].value = tmpHistory[option - 2].value + 1;
 
       // Convert data to map for firebase
       const updated_dice_history = tmpHistory.reduce(function (map, obj) {
@@ -139,7 +147,7 @@ const Tab = () => {
 
         // Find removed number from dice history and decrement the map
         let tmpHistory = graphData;
-        tmpHistory[removedNumber - 1].value = tmpHistory[removedNumber - 1].value - 1;
+        tmpHistory[removedNumber - 2].value = tmpHistory[removedNumber - 2].value - 1;
 
         // Convert data to map for firebase
         const updated_dice_history = tmpHistory.reduce(function (map, obj) {
@@ -178,8 +186,8 @@ const Tab = () => {
         total_rolls: 0,
         winner: "",
         date: serverTimestamp(),
+        duration: "0:00",
         dice_history: {
-          1: 0,
           2: 0,
           3: 0,
           4: 0,
@@ -342,9 +350,13 @@ const Tab = () => {
                 <Text style={styles.boldText}>Total Rolls: </Text>
                 {totalRolls}
               </Text>
-              <Text style={[styles.text, { paddingTop: SIZES.xxxSmall }]}>
+              <Text style={[styles.text, { paddingTop: SIZES.xxxSmall }]} numberOfLines={1}>
                 <Text style={styles.boldText}>Last Roll: </Text>
                 {diceHistoryLine}
+              </Text>
+              <Text style={styles.text}>
+                <Text style={styles.boldText}>Current Turn Time: </Text>
+                0:00
               </Text>
             </View>
 
@@ -534,6 +546,7 @@ const Tab = () => {
                 <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Clear</Text>
               </View>
             </TouchableOpacity>
+            <Text style={styles.boldText}>Game Time</Text>
             <TouchableOpacity style={styles.endGameBtnContainer} onPress={endGame}>
               <View>
                 <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Finish</Text>
