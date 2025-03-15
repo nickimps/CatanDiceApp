@@ -351,13 +351,7 @@ const Tab = () => {
                       size: 3,
                     },
                   }}
-                  // label={"Roll"}
                 />
-                {/* <VictoryAxisdependentAxisstyle={{ axis: {stroke: COLOURS.text_grey, 
-                //CHANGE COLOR OF Y-AXIS},tickLabels: {
-                fill: COLOURS.text_grey, //CHANGE COLOR OF Y-AXIS LABELS},grid: {
-                stroke: COLOURS.placeholder_grey, //CHANGE COLOR OF Y-AXIS GRID LINES
-                strokeDasharray: "7",},}}/> */}
                 <VictoryBar
                   data={graphData}
                   x="number"

@@ -30,8 +30,9 @@ export default function TabLayout() {
         options={{
           title: "History",
           tabBarIcon: ({ color }) => <FontAwesome size={28} name="bar-chart" color={color} />,
+          headerShown: false,
           // This tab will no longer show up in the tab bar.
-          //   href: null,
+          // href: null,
         }}
       />
     </Tabs>

@@ -1,0 +1,27 @@
+query(collection(db, "History"), orderBy("date", "desc")),
+  (snapshot) => {
+    console.log("");
+
+    const tmpHistory = [];
+
+    snapshot.forEach((game) => {
+      for (number in game.data().dice_history) {
+        tmpHistory.push({
+          number: number,
+          value: game.data().dice_history[number],
+        });
+      }
+    });
+
+    const result = sumValuesByNumber(tmpHistory);
+    console.log(result);
+
+    const finalHistory = [];
+    for (number in result) {
+      finalHistory.push({
+        number: number,
+        value: result[number],
+      });
+    }
+    setGraphData(finalHistory);
+  };
