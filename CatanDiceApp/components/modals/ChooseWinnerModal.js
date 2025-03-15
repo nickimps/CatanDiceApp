@@ -2,30 +2,55 @@ import { StyleSheet, Text, View, Modal, TouchableOpacity } from "react-native";
 import React from "react";
 import { COLOURS, SIZES } from "../../constants/theme";
 
-const ChooseWinnerModal = ({ isVisible, onClose, players }) => {
-  // need to create a flatlist of the players that are playing and show
-  // them as clickable sections so that they can be chosen in this pop up
-
+const ChooseWinnerModal = ({ isVisible, onClose }) => {
   return (
     <Modal animationType="slide" transparent={true} visible={isVisible}>
       <View style={styles.modalContent}>
-        <Text style={styles.title}>Please choose the winner:</Text>
+        <Text style={styles.title}>Select a winner</Text>
 
         <View style={styles.btnViewContainer}>
           <TouchableOpacity
-            style={[styles.btnContainer, { backgroundColor: COLOURS.green }]}
+            style={[styles.btnContainer, { backgroundColor: COLOURS.dark_blue }]}
             onPress={() => onClose(true, "nick")}
           >
             <View>
-              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Yes</Text>
+              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Nick</Text>
             </View>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.btnContainer, { backgroundColor: COLOURS.dark_blue }]}
+            onPress={() => onClose(true, "christine")}
+          >
+            <View>
+              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Christine</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.btnViewContainer}>
+          <TouchableOpacity
+            style={[styles.btnContainer, { backgroundColor: COLOURS.dark_blue }]}
+            onPress={() => onClose(true, "claudio")}
+          >
+            <View>
+              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Claudio</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.btnContainer, { backgroundColor: COLOURS.dark_blue }]}
+            onPress={() => onClose(true, "bella")}
+          >
+            <View>
+              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Bella</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.btnViewContainer}>
           <TouchableOpacity
             style={[styles.btnContainer, { backgroundColor: COLOURS.dark_orange }]}
             onPress={() => onClose(false, "")}
           >
             <View>
-              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>No</Text>
+              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Cancel</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -38,7 +63,7 @@ export default ChooseWinnerModal;
 
 const styles = StyleSheet.create({
   modalContent: {
-    height: "25%",
+    height: "40%",
     width: "100%",
     backgroundColor: COLOURS.light_black,
     borderTopRightRadius: SIZES.large,

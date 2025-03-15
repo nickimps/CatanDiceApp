@@ -10,23 +10,34 @@ const NewGameModal = ({ isVisible, onClose }) => {
   return (
     <Modal animationType="slide" transparent={true} visible={isVisible}>
       <View style={styles.modalContent}>
-        <Text style={styles.title}>Enter the names of the players: </Text>
-
+        {/* Exhibition or Serious */}
         <View style={styles.btnViewContainer}>
           <TouchableOpacity
-            style={[styles.btnContainer, { backgroundColor: COLOURS.green }]}
-            onPress={() => onClose(true, [], "expansion")}
+            style={[styles.btnContainer, { backgroundColor: COLOURS.dark_blue }]}
+            onPress={() => onClose(true, [], "exhibition")}
           >
             <View>
-              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Yes</Text>
+              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Exhibition</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.btnContainer, { backgroundColor: COLOURS.dark_orange }]}
-            onPress={() => onClose(false, [], "expansion")}
+            style={[styles.btnContainer, { backgroundColor: COLOURS.dark_blue }]}
+            onPress={() => onClose(true, [], "serious")}
           >
             <View>
-              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>No</Text>
+              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Serious</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Cancel Button Row */}
+        <View style={styles.btnViewContainer}>
+          <TouchableOpacity
+            style={[styles.btnContainer, { backgroundColor: COLOURS.dark_orange }]}
+            onPress={() => onClose(false, [], "cancelling")}
+          >
+            <View>
+              <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Cancel</Text>
             </View>
           </TouchableOpacity>
         </View>

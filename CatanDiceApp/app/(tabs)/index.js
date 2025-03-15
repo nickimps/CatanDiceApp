@@ -10,17 +10,19 @@ import {
 import React, { useEffect, useState } from "react";
 import * as Device from "expo-device";
 import { COLOURS, SIZES } from "../../constants/theme";
-import { VictoryBar, VictoryChart, VictoryAxis } from "victory-native";
+import { VictoryBar, VictoryChart, VictoryAxis, Data } from "victory-native";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
+  getDocs,
   limit,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
+  Timestamp,
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase-config";
@@ -31,20 +33,11 @@ import EndGameModal from "../../components/modals/EndGameModal";
 import ChooseWinnerModal from "../../components/modals/ChooseWinnerModal";
 import NewGameModal from "../../components/modals/NewGameModal";
 
-/*
- *
- *
- * TODO: Add a timer/clock that gets reset every time a dice is rolled
- * TODO: Add a game timer for the total game time
- *
- *
- */
-
 const Tab = () => {
   const [lastRoll, setLastRoll] = useState("");
   const [diceHistoryLine, setDiceHistoryLine] = useState("");
   const [totalRolls, setTotalRolls] = useState(0);
-  const [players, setPlayers] = useState([""]);
+  const [trackerType, setTrackerType] = useState("exhibition");
   const [isNewGame, setIsNewGame] = useState(true);
   const [gameID, setGameID] = useState("");
   const [showClearGameModal, setShowClearGameModal] = useState(false);
@@ -88,7 +81,6 @@ const Tab = () => {
             setTotalRolls(game.data().total_rolls);
             setDiceHistoryLine(game.data().dice_history_line);
             setGameID(game.id);
-            setPlayers(game.data().players);
           } else {
             setIsNewGame(true);
           }
@@ -174,19 +166,24 @@ const Tab = () => {
     setShowNewGameModal(true);
   };
 
-  const onNewGameModalClose = async (newGameStarted, players, expansion) => {
+  const onNewGameModalClose = async (newGameStarted, trackerType) => {
+    setShowNewGameModal(false);
+
     if (newGameStarted) {
       setLastRoll("");
+      setTrackerType(trackerType);
 
       // Add a new document with a generated id.
       await addDoc(collection(db, "History"), {
-        players: players,
-        expansion: expansion,
+        expansion: "",
+        trackerType: trackerType,
         dice_history_line: "No Rolls Recorded",
         total_rolls: 0,
         winner: "",
         date: serverTimestamp(),
-        duration: "0:00",
+        duration: "00:00",
+        startTime: serverTimestamp(),
+        endTime: serverTimestamp(),
         dice_history: {
           2: 0,
           3: 0,
@@ -206,12 +203,7 @@ const Tab = () => {
         })
         .catch((error) => {
           console.log(error.message);
-        })
-        .finally(() => {
-          setShowNewGameModal(false);
         });
-    } else {
-      setShowNewGameModal(false);
     }
   };
 
@@ -222,24 +214,61 @@ const Tab = () => {
   };
 
   const onEndGameModalClose = async (endGame) => {
+    // Hide the modal
+    setShowEndGameModal(false);
+
     if (endGame) {
-      setShowChooseWinnerModal(true);
-      setShowEndGameModal(false);
-    } else {
-      setShowEndGameModal(false);
+      // If a serious game, need to show the winner options
+      if (trackerType === "serious") {
+        setShowChooseWinnerModal(true);
+      } else {
+        // Update the database and make winner exhibition so that the game finishes.
+        await updateDoc(doc(db, "History", gameID), {
+          winner: "exhibition",
+          endTime: serverTimestamp(),
+        });
+      }
+
+      // Get the game duration and update database
+      const endTime = Timestamp.fromDate(new Date());
+      await getDocs(query(collection(db, "History"), orderBy("date", "desc"), limit(1))).then(
+        async (currentGame) => {
+          console.log(new Date(currentGame.docs[0].data().startTime.toDate()).toLocaleString());
+          console.log(new Date(endTime.toDate()).toLocaleString());
+
+          const startDate = new Date(currentGame.docs[0].data().startTime.toDate());
+          const endDate = new Date(endTime.toDate());
+
+          const diffInMs = Math.abs(endDate - startDate);
+          const diffInSeconds = Math.floor(diffInMs / 1000);
+          const diffInMinutes = Math.floor(diffInSeconds / 60);
+          const diffInHours = Math.floor(diffInMinutes / 60);
+
+          const remainingMinutes = diffInMinutes % 60;
+
+          const formattedHours = String(diffInHours).padStart(2, "0");
+          const formattedMinutes = String(remainingMinutes).padStart(2, "0");
+
+          const duration = `${formattedHours}:${formattedMinutes}`;
+          console.log(duration);
+
+          await updateDoc(doc(db, "History", gameID), {
+            endTime: endTime,
+            duration: duration,
+          });
+        }
+      );
     }
   };
 
   const onWinnerModalClose = async (winnerChosen, winner) => {
+    setShowChooseWinnerModal(false);
+
     if (winnerChosen) {
       // Update the database and choose a winner, by choosing a winner, the board will clear
       await updateDoc(doc(db, "History", gameID), {
         winner: winner,
       });
-
-      setShowChooseWinnerModal(false);
-    } else {
-      setShowChooseWinnerModal(false);
     }
   };
 
@@ -248,6 +277,8 @@ const Tab = () => {
   };
 
   const onClearGameModalClose = async (clearGame) => {
+    setShowClearGameModal(false);
+
     if (clearGame) {
       // Create blank dice_history map
       let tmpHistory = [
@@ -276,8 +307,6 @@ const Tab = () => {
         dice_history_line: "No Rolls Recorded",
       });
     }
-
-    setShowClearGameModal(false);
   };
 
   const deleteGame = () => {
@@ -285,11 +314,11 @@ const Tab = () => {
   };
 
   const onDeleteGameModalClose = async (deleteGame) => {
+    setShowDeleteGameModal(false);
+
     if (deleteGame) {
       await deleteDoc(doc(db, "History", gameID));
     }
-
-    setShowDeleteGameModal(false);
   };
 
   return (
@@ -339,7 +368,6 @@ const Tab = () => {
                     data: { fill: COLOURS.teal, width: 18, color: COLOURS.teal },
                     labels: { fontSize: SIZES.medium, fill: COLOURS.teal },
                   }}
-                  animate
                 />
               </VictoryChart>
             </View>
@@ -529,7 +557,10 @@ const Tab = () => {
       </View>
       <View style={styles.btnViewContainer}>
         {isNewGame ? (
-          <TouchableOpacity style={styles.newGameBtnContainer} onPress={newGame}>
+          <TouchableOpacity
+            style={[styles.newGameBtnContainer, { backgroundColor: COLOURS.green }]}
+            onPress={newGame}
+          >
             <View>
               <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>New Game</Text>
             </View>
@@ -559,11 +590,7 @@ const Tab = () => {
       <DeleteGameModal isVisible={showDeleteGameModal} onClose={onDeleteGameModalClose} />
       <ClearGameModal isVisible={showClearGameModal} onClose={onClearGameModalClose} />
       <EndGameModal isVisible={showEndGameModal} onClose={onEndGameModalClose} />
-      <ChooseWinnerModal
-        isVisible={showChooseWinnerModal}
-        onClose={onWinnerModalClose}
-        players={players}
-      />
+      <ChooseWinnerModal isVisible={showChooseWinnerModal} onClose={onWinnerModalClose} />
       <NewGameModal isVisible={showNewGameModal} onClose={onNewGameModalClose} />
     </SafeAreaView>
   );

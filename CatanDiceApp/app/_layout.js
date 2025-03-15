@@ -9,6 +9,8 @@ export default function AppLayout() {
     NavigationBar.setBackgroundColorAsync(COLOURS.light_black);
 
     StatusBar.setStatusBarStyle("light");
+    StatusBar.setStatusBarTranslucent(true);
+    StatusBar.setStatusBarBackgroundColor(COLOURS.bg_black);
   }, []);
 
   return (
