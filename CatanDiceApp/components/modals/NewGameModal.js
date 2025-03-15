@@ -3,10 +3,6 @@ import React from "react";
 import { COLOURS, SIZES } from "../../constants/theme";
 
 const NewGameModal = ({ isVisible, onClose }) => {
-  // use new player items to add each time a new name is added
-
-  // need a dropdown or something for the different expansions too
-
   return (
     <Modal animationType="slide" transparent={true} visible={isVisible}>
       <View style={styles.modalContent}>
@@ -14,7 +10,7 @@ const NewGameModal = ({ isVisible, onClose }) => {
         <View style={styles.btnViewContainer}>
           <TouchableOpacity
             style={[styles.btnContainer, { backgroundColor: COLOURS.dark_blue }]}
-            onPress={() => onClose(true, [], "exhibition")}
+            onPress={() => onClose(true, "exhibition")}
           >
             <View>
               <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Exhibition</Text>
@@ -22,7 +18,7 @@ const NewGameModal = ({ isVisible, onClose }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.btnContainer, { backgroundColor: COLOURS.dark_blue }]}
-            onPress={() => onClose(true, [], "serious")}
+            onPress={() => onClose(true, "serious")}
           >
             <View>
               <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Serious</Text>
@@ -34,7 +30,7 @@ const NewGameModal = ({ isVisible, onClose }) => {
         <View style={styles.btnViewContainer}>
           <TouchableOpacity
             style={[styles.btnContainer, { backgroundColor: COLOURS.dark_orange }]}
-            onPress={() => onClose(false, [], "cancelling")}
+            onPress={() => onClose(false, "cancelling")}
           >
             <View>
               <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Cancel</Text>

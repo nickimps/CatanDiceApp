@@ -6,14 +6,16 @@ import {
   SafeAreaView,
   Dimensions,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import * as Device from "expo-device";
 import React, { useEffect, useState } from "react";
 import { COLOURS, SIZES } from "../../constants/theme";
 import { VictoryAxis, VictoryBar, VictoryChart } from "victory-native";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../../firebase-config";
 import { Svg } from "react-native-svg";
+import PreviousGameItem from "../../components/items/PreviousGameItem";
 
 const Tab = () => {
   const { height, width } = Dimensions.get("window");
@@ -31,13 +33,21 @@ const Tab = () => {
     { number: 12, value: 0 },
   ]);
   const [refresh, setRefresh] = useState(true);
+  const [previousGameData, setPreviousGameData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const querySnapshot = await getDocs(collection(db, "History"));
+      console.log("fetching");
 
+      const querySnapshot = await getDocs(
+        query(collection(db, "History"), orderBy("date", "desc"))
+      );
+
+      // Accumulate all the dice rolls and collect game data
       const tmpHistory = [];
+      const gameData = [];
       querySnapshot.forEach((doc) => {
+        // Accumulate dice roll information
         for (number in doc.data().dice_history) {
           tmpHistory.push({
             number: number,
@@ -45,17 +55,25 @@ const Tab = () => {
           });
         }
 
-        const result = sumValuesByNumber(tmpHistory);
-
-        const finalHistory = [];
-        for (number in result) {
-          finalHistory.push({
-            number: number,
-            value: result[number],
-          });
-        }
-        setGraphData(finalHistory);
+        // Collect game data
+        let data = { ...doc.data(), id: doc.id };
+        gameData.push(data);
       });
+      // Save previous game data
+      setPreviousGameData(gameData);
+
+      // Determine total dice rolls on collected dice roll history
+      const result = sumValuesByNumber(tmpHistory);
+      const finalHistory = [];
+      for (number in result) {
+        finalHistory.push({
+          number: number,
+          value: result[number],
+        });
+      }
+      setGraphData(finalHistory);
+
+      console.log("done fetching");
     };
 
     fetchData();
@@ -81,6 +99,10 @@ const Tab = () => {
   const handleRefresh = () => {
     console.log("refreshing");
     setRefresh(!refresh);
+  };
+
+  const handleGamePress = (item) => {
+    console.log("game pressed: " + item);
   };
 
   return (
@@ -130,11 +152,15 @@ const Tab = () => {
           </View>
         </TouchableOpacity>
       </View>
-      <View style={styles.btnViewContainer}>
-        <Text>
-          Add cards for the last X games, use a flatlist or something like from vantageprotection so
-          its efficient
-        </Text>
+      <Text> add leaderboard here</Text>
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={previousGameData}
+          renderItem={({ item }) => (
+            <PreviousGameItem item={item} handleGamePress={handleGamePress} />
+          )}
+          keyExtractor={(item) => item.id}
+        />
       </View>
     </SafeAreaView>
   );
@@ -148,6 +174,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLOURS.bg_black,
     paddingTop: Device.manufacturer == "Apple" ? 0 : StatusBar.currentHeight,
     paddingHorizontal: SIZES.small,
+    paddingBottom: 49,
   },
   graphContainer: {
     justifyContent: "center",
@@ -174,5 +201,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 3,
+  },
+  previousGameDataContainer: {
+    // marginBottom: tabBarHeight,
   },
 });

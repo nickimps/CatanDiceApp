@@ -11,7 +11,7 @@ const ChooseWinnerModal = ({ isVisible, onClose }) => {
         <View style={styles.btnViewContainer}>
           <TouchableOpacity
             style={[styles.btnContainer, { backgroundColor: COLOURS.dark_blue }]}
-            onPress={() => onClose(true, "nick")}
+            onPress={() => onClose(true, "Nick")}
           >
             <View>
               <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Nick</Text>
@@ -19,7 +19,7 @@ const ChooseWinnerModal = ({ isVisible, onClose }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.btnContainer, { backgroundColor: COLOURS.dark_blue }]}
-            onPress={() => onClose(true, "christine")}
+            onPress={() => onClose(true, "Christine")}
           >
             <View>
               <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Christine</Text>
@@ -29,7 +29,7 @@ const ChooseWinnerModal = ({ isVisible, onClose }) => {
         <View style={styles.btnViewContainer}>
           <TouchableOpacity
             style={[styles.btnContainer, { backgroundColor: COLOURS.dark_blue }]}
-            onPress={() => onClose(true, "claudio")}
+            onPress={() => onClose(true, "Claudio")}
           >
             <View>
               <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Claudio</Text>
@@ -37,7 +37,7 @@ const ChooseWinnerModal = ({ isVisible, onClose }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.btnContainer, { backgroundColor: COLOURS.dark_blue }]}
-            onPress={() => onClose(true, "bella")}
+            onPress={() => onClose(true, "Bella")}
           >
             <View>
               <Text style={[styles.btnText, { color: COLOURS.text_grey }]}>Bella</Text>

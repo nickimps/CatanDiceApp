@@ -175,7 +175,6 @@ const Tab = () => {
 
       // Add a new document with a generated id.
       await addDoc(collection(db, "History"), {
-        expansion: "",
         trackerType: trackerType,
         dice_history_line: "No Rolls Recorded",
         total_rolls: 0,
@@ -233,9 +232,6 @@ const Tab = () => {
       const endTime = Timestamp.fromDate(new Date());
       await getDocs(query(collection(db, "History"), orderBy("date", "desc"), limit(1))).then(
         async (currentGame) => {
-          console.log(new Date(currentGame.docs[0].data().startTime.toDate()).toLocaleString());
-          console.log(new Date(endTime.toDate()).toLocaleString());
-
           const startDate = new Date(currentGame.docs[0].data().startTime.toDate());
           const endDate = new Date(endTime.toDate());
 
@@ -246,11 +242,13 @@ const Tab = () => {
 
           const remainingMinutes = diffInMinutes % 60;
 
-          const formattedHours = String(diffInHours).padStart(2, "0");
-          const formattedMinutes = String(remainingMinutes).padStart(2, "0");
+          const formattedHours = String(diffInHours); //.padStart(2, "0");
+          const formattedMinutes = String(remainingMinutes); //.padStart(2, "0");
 
-          const duration = `${formattedHours}:${formattedMinutes}`;
-          console.log(duration);
+          let duration = "";
+          diffInHours.toFixed() == 0
+            ? (duration = `${formattedMinutes} min`)
+            : (duration = `${formattedHours}hr ${formattedMinutes}min`);
 
           await updateDoc(doc(db, "History", gameID), {
             endTime: endTime,
@@ -305,6 +303,8 @@ const Tab = () => {
         total_rolls: 0,
         dice_history: updated_dice_history,
         dice_history_line: "No Rolls Recorded",
+        startTime: serverTimestamp(),
+        endTime: serverTimestamp(),
       });
     }
   };
@@ -598,6 +598,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLOURS.bg_black,
     paddingTop: Device.manufacturer == "Apple" ? 0 : StatusBar.currentHeight,
     paddingHorizontal: SIZES.small,
+    paddingBottom: SIZES.tabBarHeight,
   },
   text: {
     fontSize: SIZES.medium - 1,

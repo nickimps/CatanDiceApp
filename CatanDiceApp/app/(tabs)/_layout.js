@@ -12,6 +12,8 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: COLOURS.light_black,
           borderTopWidth: 0,
+          position: "absolute",
+          height: 49,
         },
         headerStyle: { backgroundColor: COLOURS.light_black },
         headerTitleStyle: { color: COLOURS.text_grey },

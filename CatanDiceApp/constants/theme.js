@@ -64,6 +64,7 @@ const SIZES = {
   xLarge: 24,
   xxLarge: 32,
   xxxLarge: 40,
+  tabBarHeight: 50,
 };
 
 export { COLOURS, FONT, SIZES };
