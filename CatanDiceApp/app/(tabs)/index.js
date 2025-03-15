@@ -63,7 +63,7 @@ const Tab = () => {
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      query(collection(db, "History"), orderBy("date", "desc"), limit(1)),
+      query(collection(db, "GameHistory"), orderBy("date", "desc"), limit(1)),
       (snapshot) => {
         // Adds the dice history values from DB to the graphData in the same mapping format
         snapshot.forEach((game) => {
@@ -115,7 +115,7 @@ const Tab = () => {
       }
 
       // Update DB with new total rolls and dice history info
-      await updateDoc(doc(db, "History", gameID), {
+      await updateDoc(doc(db, "GameHistory", gameID), {
         total_rolls: totalRolls + 1,
         dice_history: updated_dice_history,
         dice_history_line: updated_dice_history_line,
@@ -151,7 +151,7 @@ const Tab = () => {
         setLastRoll(historySplit[0]);
 
         // Update DB with new total rolls and dice history info
-        await updateDoc(doc(db, "History", gameID), {
+        await updateDoc(doc(db, "GameHistory", gameID), {
           total_rolls: totalRolls - 1,
           dice_history: updated_dice_history,
           dice_history_line: updated_dice_history_line,
@@ -174,7 +174,7 @@ const Tab = () => {
       setTrackerType(trackerType);
 
       // Add a new document with a generated id.
-      await addDoc(collection(db, "History"), {
+      await addDoc(collection(db, "GameHistory"), {
         trackerType: trackerType,
         dice_history_line: "No Rolls Recorded",
         total_rolls: 0,
@@ -222,7 +222,7 @@ const Tab = () => {
         setShowChooseWinnerModal(true);
       } else {
         // Update the database and make winner exhibition so that the game finishes.
-        await updateDoc(doc(db, "History", gameID), {
+        await updateDoc(doc(db, "GameHistory", gameID), {
           winner: "exhibition",
           endTime: serverTimestamp(),
         });
@@ -230,7 +230,7 @@ const Tab = () => {
 
       // Get the game duration and update database
       const endTime = Timestamp.fromDate(new Date());
-      await getDocs(query(collection(db, "History"), orderBy("date", "desc"), limit(1))).then(
+      await getDocs(query(collection(db, "GameHistory"), orderBy("date", "desc"), limit(1))).then(
         async (currentGame) => {
           const startDate = new Date(currentGame.docs[0].data().startTime.toDate());
           const endDate = new Date(endTime.toDate());
@@ -250,7 +250,7 @@ const Tab = () => {
             ? (duration = `${formattedMinutes} min`)
             : (duration = `${formattedHours}hr ${formattedMinutes}min`);
 
-          await updateDoc(doc(db, "History", gameID), {
+          await updateDoc(doc(db, "GameHistory", gameID), {
             endTime: endTime,
             duration: duration,
           });
@@ -264,7 +264,7 @@ const Tab = () => {
 
     if (winnerChosen) {
       // Update the database and choose a winner, by choosing a winner, the board will clear
-      await updateDoc(doc(db, "History", gameID), {
+      await updateDoc(doc(db, "GameHistory", gameID), {
         winner: winner,
       });
     }
@@ -299,7 +299,7 @@ const Tab = () => {
         return map;
       }, {});
 
-      await updateDoc(doc(db, "History", gameID), {
+      await updateDoc(doc(db, "GameHistory", gameID), {
         total_rolls: 0,
         dice_history: updated_dice_history,
         dice_history_line: "No Rolls Recorded",
@@ -317,7 +317,7 @@ const Tab = () => {
     setShowDeleteGameModal(false);
 
     if (deleteGame) {
-      await deleteDoc(doc(db, "History", gameID));
+      await deleteDoc(doc(db, "GameHistory", gameID));
     }
   };
 

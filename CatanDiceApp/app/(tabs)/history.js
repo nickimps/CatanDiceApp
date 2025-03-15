@@ -40,7 +40,7 @@ const Tab = () => {
       console.log("fetching");
 
       const querySnapshot = await getDocs(
-        query(collection(db, "History"), orderBy("date", "desc"))
+        query(collection(db, "GameHistory"), orderBy("date", "desc"))
       );
 
       // Accumulate all the dice rolls and collect game data
